@@ -2,160 +2,186 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	
+	"strings"
+	"time"
 )
 
-const NMAX int = 1000
-type hashCollected [NMAX]string
-var history = [NMAX]string{}
+const NMAX = 20
 
-var crypto = [62]string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+type Akun struct {
+	Username string
+	Password string
+}
+
+type Mining struct {
+	ID       int
+	Koin     string
+	Nonce    int
+	Waktu    time.Duration
+}
+
+var akun Akun
+var isLoggedIn bool
+var riwayat [NMAX]Mining
+var nData int
+var idCounter int = 1
 
 func main() {
-	/*
-		IS:  - Variabel `pilihan` belum berisi input dari user.
-		     - Variabel `username` masih kosong, belum menyimpan nama pengguna.
-		     - Variabel `loggedIn` bernilai false, artinya belum ada pengguna yang login.
-		     - Array `HashColl` dan `history` masih kosong, belum ada data hasil mining.
-
-		FS:  - Menampilkan menu utama kepada user.
-		     - Menerima input pilihan dari user.
-		     - Melakukan proses login dan menyimpan status login.
-		     - Melakukan proses mining berdasarkan tingkat kesulitan (1–3).
-		     - Menyimpan hasil mining ke dalam `history` (berhasil/gagal).
-		     - Menampilkan riwayat hasil mining.
-		     - Keluar dari program jika dipilih oleh pengguna.
-	*/
-
 	var pilihan int
-	var HashColl hashCollected
-	var i, j, N int = 0, 0, 0
-	var isFound, isEmpty = false, false
-	var targetHash, tempHash string
-	var username string
-	var loggedIn bool = false
 
 	for {
-		fmt.Println("\n=== APLIKASI MINING ===")
-		fmt.Println("1. Login")
-		fmt.Println("2. Mulai Mining")
-		fmt.Println("3. Lihat History")
-		fmt.Println("4. Keluar")
-		fmt.Print("Pilih menu: ")
-		fmt.Scan(&pilihan)
+		if !isLoggedIn {
+			tampilkanHeader("🟡 CryptoMiner - Simulasi Mining Sederhana")
+			fmt.Println("1. Buat Akun")
+			fmt.Println("2. Login")
+			fmt.Println("3. Keluar")
+			fmt.Print(">> Pilihan Anda: ")
+			fmt.Scanln(&pilihan)
 
-		switch pilihan {
-		case 1:
-			fmt.Print("Masukkan username: ")
-			fmt.Scan(&username)
-			loggedIn = true
-			fmt.Println("Login berhasil!")
-		case 2:
-		if !loggedIn {
-			fmt.Println("Silakan login terlebih dahulu!")
-			continue
-	}
-
-		var tingkatKesulitan int
-		fmt.Print("Masukkan tingkat kesulitan (1-5): ")
-		fmt.Scan(&tingkatKesulitan)
-
-		if tingkatKesulitan < 1 || tingkatKesulitan > 5 {
-		fmt.Println("Tingkat kesulitan hanya boleh antara 1 sampai 5!")
-		continue
-	}
-
-	// Tambahkan logika berdasarkan tingkat kesulitan, jika ada.
-	fmt.Printf("Tingkat kesulitan %d dipilih.\n", tingkatKesulitan)
-
-
-			//mining
-
-			fmt.Scan(&N)
-			fmt.Scan(&targetHash)
-
-			for !isFound && i <= N {
-
-				hashSederhana(HashColl, &tempHash)
-
-				if tempHash != targetHash && i == N {
-					fmt.Println("Waktu habis! Tidak berhasil menemukan hash.")
-					for j < NMAX && !isEmpty {
-						if len(history[j]) == 0 {
-							isEmpty = true
-						} else {
-							j++
-						}
-					}
-					history[j] = "Gagal"
-				} else if tempHash == targetHash {
-					fmt.Printf("Percobaan: %d | Hash: %s\n", i, tempHash)
-					for j < NMAX && !isEmpty {
-						if len(history[j]) == 0 {
-							isEmpty = true
-						} else {
-							j++
-						}
-					}
-					history[j] = "Berhasil"
-					isFound = true
-				} else {
-					i++
-				}
+			switch pilihan {
+			case 1:
+				buatAkun()
+			case 2:
+				login()
+			case 3:
+				fmt.Println("👋 Terima kasih telah mencoba CryptoMiner!")
+				return
+			default:
+				fmt.Println("🚫 Pilihan tidak valid.\n")
 			}
-		}
-	}
-
-}
-
-func hashSederhana(A hashCollected, data *string) {
-	/*
-	   IS:  - Parameter `data` adalah pointer ke string kosong.
-	        - Array `A` berisi hash-hash yang telah dihasilkan sebelumnya (untuk menghindari duplikasi).
-
-	   FS:  - Menghasilkan hash acak sepanjang 8 karakter yang terdiri dari karakter alfanumerik.
-	        - Hash yang dihasilkan tidak boleh sama dengan elemen manapun di array `A`.
-	        - Nilai hash disimpan dalam variabel `*data`.
-	*/
-	var addKode string
-	var i, j int = 0, 0
-
-	for len(A) != 8 {
-		for j = 0; j < 8; j++ {
-			addKode = crypto[rand.Intn(62)]
-			*data = *data + addKode
-		}
-
-		for i < NMAX && *data != "" {
-			if A[i] == *data {
-				*data = ""
-			}
-			i++
+		} else {
+			menuUtama()
 		}
 	}
 }
 
-func menujuString(num int) string {
-	/*
-		IS:  Parameter `num` bertipe integer sudah berisi angka yang akan dikonversi.
-		     Variabel `result` masih kosong, `n` menyimpan salinan dari `num`.
-
-		FS:  Fungsi mengembalikan representasi string dari angka `num`.
-		     Jika `num = 123`, maka hasilnya adalah "123".
-	*/
-	if num == 0 {
-		return "0"
-	}
-	var result string = ""
-	var n int = num
-	var d int
-	var digitChar string
-	for n > 0 {
-		d = n % 10
-		digitChar = string('0' + byte(d))
-		result = digitChar + result
-		n = n / 10
-	}
-	return result
+func tampilkanHeader(judul string) {
+	fmt.Println(strings.Repeat("=", 40))
+	fmt.Println(judul)
+	fmt.Println(strings.Repeat("=", 40))
 }
+
+func buatAkun() {
+	fmt.Println("\n🆕 Buat Akun Baru")
+	fmt.Print("Username: ")
+	fmt.Scanln(&akun.Username)
+	fmt.Println("✅ Akun berhasil dibuat!\n")
+}
+
+func login() {
+	var usn string
+	fmt.Println("\n🔐 Login")
+	fmt.Print("Username: ")
+	fmt.Scanln(&usn)
+
+	if usn == akun.Username  {
+		isLoggedIn = true
+		fmt.Println("✅ Login berhasil!\n")
+	} else {
+		fmt.Println("🚫 Username salah\n")
+	}
+}
+
+func menuUtama() {
+	var pilihan int
+	tampilkanHeader("⛏️ Menu Utama CryptoMiner")
+	fmt.Println("1. Mulai Mining")
+	fmt.Println("2. Lihat Riwayat Mining")
+	fmt.Println("3. Urutkan Riwayat (Waktu tercepat)")
+	fmt.Println("4. Urutkan Riwayat (ID terkecil)")
+	fmt.Println("5. Cari Riwayat Berdasarkan ID")
+	fmt.Println("6. Logout")
+	fmt.Print(">> Pilihan Anda: ")
+	fmt.Scanln(&pilihan)
+
+	switch pilihan {
+	case 1:
+		mining()
+	case 2:
+		tampilkanRiwayat()
+	case 3:
+		sortByWaktu()
+	case 4:
+		isLoggedIn = false
+		fmt.Println("✅ Logout berhasil.\n")
+	default:
+		fmt.Println("🚫 Pilihan tidak valid.\n")
+	}
+}
+
+func mining() {
+	if nData >= NMAX {
+		fmt.Println("🚫 Riwayat penuh, tidak bisa mining lagi.")
+		return
+	}
+
+	var namaKoin string
+	var attempts int
+	fmt.Println("\n🔨 Mulai Mining")
+	fmt.Print("Nama Koin: ")
+	fmt.Scanln(&namaKoin)
+
+	fmt.Print("Berapa banyak percobaan mining: ")
+	fmt.Scanln(&attempts)
+
+	start := time.Now()
+
+	// Simulate mining attempts
+	for i := 0; i < attempts; i++ {
+		// Simulate some processing time for each attempt
+		time.Sleep(100 * time.Millisecond) // Simulate work being done
+	}
+
+	elapsed := time.Since(start)
+
+	riwayat[nData] = Mining{
+		ID:       idCounter,
+		Koin:     namaKoin,
+		Nonce:    attempts, // Store the number of attempts as the nonce
+		Waktu:    elapsed,
+	}
+	idCounter++
+	nData++
+
+	fmt.Printf("✅ Mining selesai! Percobaan: %d | Waktu: %v\n\n", attempts, elapsed)
+}
+
+
+func tampilkanRiwayat() {
+	tampilkanHeader("📄 Riwayat Mining")
+
+	if nData == 0 {
+		fmt.Println("Belum ada riwayat mining.\n")
+		return
+	}
+
+	fmt.Printf("%-5s %-10s %-10s %-15s \n", "ID", "Koin", "Nonce", "Waktu")
+	fmt.Println(strings.Repeat("-", 40))
+	for i := 0; i < nData; i++ {
+		m := riwayat[i]
+		fmt.Printf("%-5d %-10s %-10d %-15v \n", m.ID, m.Koin, m.Nonce, m.Waktu)
+	}
+	fmt.Println()
+}
+
+func sortByWaktu() {
+    for i := 0; i < nData-1; i++ {
+        minIdx := i
+        for j := i + 1; j < nData; j++ {
+            // Compare Waktu and handle the late condition
+            if riwayat[j].Waktu < riwayat[minIdx].Waktu {
+                minIdx = j
+            }
+        }
+        // Swap the elements
+        riwayat[i], riwayat[minIdx] = riwayat[minIdx], riwayat[i]
+
+        // Output if an entry is late
+        if riwayat[i].Waktu > expectedWaktu {
+            fmt.Println("Waktu terlambat untuk entri", i)
+        }
+    }
+    fmt.Println("Riwayat diurutkan berdasarkan waktu tercepat.\n")
+    tampilkanRiwayat()
+}
+
