@@ -165,7 +165,8 @@ func tampilkanRiwayat() {
 }
 
 func sortByWaktu() {
-    for i := 0; i < nData-1; i++ {
+   	var i int 
+	for i = 0; i < nData-1; i++ {
         minIdx := i
         for j := i + 1; j < nData; j++ {
             // Compare Waktu and handle the late condition
