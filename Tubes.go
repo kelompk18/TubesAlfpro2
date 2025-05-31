@@ -169,7 +169,8 @@ func tampilkanRiwayat() {
 }
 // menggunakan insertion sort, mengurutkan berdasarkan nonce (jumlah percobaan)
 func sortByNonce() {
-	for i := 1; i < nData; i++ {
+	var i int 
+	for i = 1; i < nData; i++ {
 		temp := riwayat[i]
 		j := i - 1
 		for j >= 0 && riwayat[j].Nonce > temp.Nonce {
