@@ -169,10 +169,11 @@ func tampilkanRiwayat() {
 }
 // menggunakan insertion sort, mengurutkan berdasarkan nonce (jumlah percobaan)
 func sortByNonce() {
-	var i int 
+	var i,j int 
+	var temp Mining
 	for i = 1; i < nData; i++ {
-		temp := riwayat[i]
-		j := i - 1
+		temp = riwayat[i]
+		j = i - 1
 		for j >= 0 && riwayat[j].Nonce > temp.Nonce {
 			riwayat[j+1] = riwayat[j]
 			j--
@@ -186,10 +187,12 @@ func sortByNonce() {
 
 // menggunakan fungsi selection sort
 func sortByWaktu() {
-	expectedWaktu := 2 * time.Second
-	for i := 0; i < nData-1; i++ {
-		minIdx := i
-		for j := i + 1; j < nData; j++ {
+	var i, j, minIdx int 
+	var expectedWaktu time.Duration = 2 * time.Second
+
+	for i = 0; i < nData-1; i++ {
+		minIdx = i
+		for j = i + 1; j < nData; j++ {
 			if riwayat[j].Waktu < riwayat[minIdx].Waktu {
 				minIdx = j
 			}
