@@ -10,14 +10,12 @@ const NMAX = 20
 
 type Akun struct {
 	Username string
-	Password string
 }
 
 type Mining struct {
-	ID       int
-	Koin     string
-	Nonce    int
-	Waktu    time.Duration
+	Koin  string
+	Nonce int
+	Waktu time.Duration
 }
 
 var akun Akun
@@ -38,6 +36,7 @@ func main() {
 			fmt.Print(">> Pilihan Anda: ")
 			fmt.Scanln(&pilihan)
 
+			// menggunakan fungsi switch case
 			switch pilihan {
 			case 1:
 				buatAkun()
@@ -55,12 +54,14 @@ func main() {
 	}
 }
 
+// menggunakan strings.Repeat
 func tampilkanHeader(judul string) {
 	fmt.Println(strings.Repeat("=", 40))
 	fmt.Println(judul)
 	fmt.Println(strings.Repeat("=", 40))
 }
 
+// buat akun
 func buatAkun() {
 	fmt.Println("\n🆕 Buat Akun Baru")
 	fmt.Print("Username: ")
@@ -68,13 +69,14 @@ func buatAkun() {
 	fmt.Println("✅ Akun berhasil dibuat!\n")
 }
 
+// login akun
 func login() {
 	var usn string
 	fmt.Println("\n🔐 Login")
 	fmt.Print("Username: ")
 	fmt.Scanln(&usn)
 
-	if usn == akun.Username  {
+	if usn == akun.Username {
 		isLoggedIn = true
 		fmt.Println("✅ Login berhasil!\n")
 	} else {
@@ -82,15 +84,15 @@ func login() {
 	}
 }
 
+// menu utama
 func menuUtama() {
 	var pilihan int
 	tampilkanHeader("⛏️ Menu Utama CryptoMiner")
 	fmt.Println("1. Mulai Mining")
 	fmt.Println("2. Lihat Riwayat Mining")
 	fmt.Println("3. Urutkan Riwayat (Waktu tercepat)")
-	fmt.Println("4. Urutkan Riwayat (ID terkecil)")
-	fmt.Println("5. Cari Riwayat Berdasarkan ID")
-	fmt.Println("6. Logout")
+	fmt.Println("4. Urutkan Riwayat (Nonce terkecil)")
+	fmt.Println("5.Logout")
 	fmt.Print(">> Pilihan Anda: ")
 	fmt.Scanln(&pilihan)
 
@@ -102,6 +104,8 @@ func menuUtama() {
 	case 3:
 		sortByWaktu()
 	case 4:
+		sortByNonce()
+	case 5:
 		isLoggedIn = false
 		fmt.Println("✅ Logout berhasil.\n")
 	default:
@@ -109,6 +113,8 @@ func menuUtama() {
 	}
 }
 
+
+// mining koin
 func mining() {
 	if nData >= NMAX {
 		fmt.Println("🚫 Riwayat penuh, tidak bisa mining lagi.")
@@ -126,19 +132,17 @@ func mining() {
 
 	start := time.Now()
 
-	// Simulate mining attempts
+	// menggunakan fungsi for-loop dan time.Sleep
 	for i := 0; i < attempts; i++ {
-		// Simulate some processing time for each attempt
-		time.Sleep(100 * time.Millisecond) // Simulate work being done
+		time.Sleep(100 * time.Millisecond)
 	}
 
 	elapsed := time.Since(start)
 
 	riwayat[nData] = Mining{
-		ID:       idCounter,
-		Koin:     namaKoin,
-		Nonce:    attempts, // Store the number of attempts as the nonce
-		Waktu:    elapsed,
+		Koin:  namaKoin,
+		Nonce: attempts,
+		Waktu: elapsed,
 	}
 	idCounter++
 	nData++
@@ -146,7 +150,7 @@ func mining() {
 	fmt.Printf("✅ Mining selesai! Percobaan: %d | Waktu: %v\n\n", attempts, elapsed)
 }
 
-
+// menampilkan riwayat mining
 func tampilkanRiwayat() {
 	tampilkanHeader("📄 Riwayat Mining")
 
@@ -155,34 +159,46 @@ func tampilkanRiwayat() {
 		return
 	}
 
-	fmt.Printf("%-5s %-10s %-10s %-15s \n", "ID", "Koin", "Nonce", "Waktu")
+	fmt.Printf("%-10s %-10s %-15s \n", "Koin", "Nonce", "Waktu")
 	fmt.Println(strings.Repeat("-", 40))
 	for i := 0; i < nData; i++ {
 		m := riwayat[i]
-		fmt.Printf("%-5d %-10s %-10d %-15v \n", m.ID, m.Koin, m.Nonce, m.Waktu)
+		fmt.Printf("%-10s %-10d %-15v \n", m.Koin, m.Nonce, m.Waktu)
 	}
 	fmt.Println()
 }
-
-func sortByWaktu() {
-   	var i int 
-	for i = 0; i < nData-1; i++ {
-        minIdx := i
-        for j := i + 1; j < nData; j++ {
-            // Compare Waktu and handle the late condition
-            if riwayat[j].Waktu < riwayat[minIdx].Waktu {
-                minIdx = j
-            }
-        }
-        // Swap the elements
-        riwayat[i], riwayat[minIdx] = riwayat[minIdx], riwayat[i]
-
-        // Output if an entry is late
-        if riwayat[i].Waktu > expectedWaktu {
-            fmt.Println("Waktu terlambat untuk entri", i)
-        }
-    }
-    fmt.Println("Riwayat diurutkan berdasarkan waktu tercepat.\n")
-    tampilkanRiwayat()
+// menggunakan insertion sort, mengurutkan berdasarkan nonce (jumlah percobaan)
+func sortByNonce() {
+	for i := 1; i < nData; i++ {
+		temp := riwayat[i]
+		j := i - 1
+		for j >= 0 && riwayat[j].Nonce > temp.Nonce {
+			riwayat[j+1] = riwayat[j]
+			j--
+		}
+		riwayat[j+1] = temp
+	}
+	fmt.Println("Riwayat diurutkan berdasarkan jumlah nonce (percobaan).\n")
+	tampilkanRiwayat()
 }
 
+
+// menggunakan fungsi selection sort
+func sortByWaktu() {
+	expectedWaktu := 2 * time.Second
+	for i := 0; i < nData-1; i++ {
+		minIdx := i
+		for j := i + 1; j < nData; j++ {
+			if riwayat[j].Waktu < riwayat[minIdx].Waktu {
+				minIdx = j
+			}
+		}
+		riwayat[i], riwayat[minIdx] = riwayat[minIdx], riwayat[i]
+
+		if riwayat[i].Waktu > expectedWaktu {
+			fmt.Println("⚠️  Waktu terlambat untuk entri", i)
+		}
+	}
+	fmt.Println("Riwayat diurutkan berdasarkan waktu tercepat.\n")
+	tampilkanRiwayat()
+}
